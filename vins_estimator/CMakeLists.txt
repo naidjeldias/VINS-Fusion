@@ -31,7 +31,18 @@ include_directories(
   ${EIGEN3_INCLUDE_DIR}
 )
 
-catkin_package()
+catkin_package(
+  INCLUDE_DIRS src
+  LIBRARIES vins_lib
+  CATKIN_DEPENDS roscpp
+    std_msgs
+    geometry_msgs
+    nav_msgs
+    tf
+    cv_bridge
+    camera_models
+    image_transport
+)
 
 add_library(vins_lib
     src/estimator/parameters.cpp

@@ -12,9 +12,19 @@
 
 Estimator::Estimator(): f_manager{Rs}
 {
-    ROS_INFO("init begins");
+    ROS_INFO("Init begins!!!");
     initThreadFlag = false;
+
+    for(int i=0; i<WINDOW_SIZE+1; ++i)
+    {
+       pre_integrations[i] = nullptr;
+    }
+
+    tmp_pre_integration = nullptr;
+    last_marginalization_info = nullptr;
+
     clearState();
+    ROS_INFO("State clear");
 }
 
 Estimator::~Estimator()
@@ -29,6 +39,7 @@ Estimator::~Estimator()
 void Estimator::clearState()
 {
     mProcess.lock();
+    
     while(!accBuf.empty())
         accBuf.pop();
     while(!gyrBuf.empty())
@@ -44,6 +55,7 @@ void Estimator::clearState()
     inputImageCnt = 0;
     initFirstPoseFlag = false;
 
+
     for (int i = 0; i < WINDOW_SIZE + 1; i++)
     {
         Rs[i].setIdentity();
@@ -52,15 +64,19 @@ void Estimator::clearState()
         Bas[i].setZero();
         Bgs[i].setZero();
         dt_buf[i].clear();
+        
         linear_acceleration_buf[i].clear();
         angular_velocity_buf[i].clear();
 
+        
         if (pre_integrations[i] != nullptr)
         {
             delete pre_integrations[i];
         }
         pre_integrations[i] = nullptr;
     }
+
+    
 
     for (int i = 0; i < NUM_OF_CAM; i++)
     {
@@ -90,6 +106,8 @@ void Estimator::clearState()
     failure_occur = 0;
 
     mProcess.unlock();
+
+    
 }
 
 void Estimator::setParameter()
@@ -99,7 +117,7 @@ void Estimator::setParameter()
     {
         tic[i] = TIC[i];
         ric[i] = RIC[i];
-        cout << " exitrinsic cam " << i << endl  << ric[i] << endl << tic[i].transpose() << endl;
+        cout << " Exitrinsic cam " << i << endl  << ric[i] << endl << tic[i].transpose() << endl;
     }
     f_manager.setRic(ric);
     ProjectionTwoFrameOneCamFactor::sqrt_info = FOCAL_LENGTH / 1.5 * Matrix2d::Identity();
